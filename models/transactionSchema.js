@@ -41,7 +41,7 @@
             required: [true]
         },
         value: {
-            type: Double,
+            type: Number,
             required: [true]
         },
         gas: {
