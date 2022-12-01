@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const morgan=require('morgan');
 const app = express();
 const server = http.createServer(app);
-
+const {job}=require('./utils/EthereumPriceUpdater');
 // app.use(fileupload());
 app.use(morgan('tiny'));
 app.use([
@@ -16,8 +16,8 @@ app.use([
      routes,
 ]);
 
-mongoose.connect("mongodb://localhost:27017/Koinx", {useNewUrlParser: true, useUnifiedTopology: true});
-
+const db=mongoose.connect("mongodb://localhost:27017/Koinx", {useNewUrlParser: true, useUnifiedTopology: true});
+job.start();
 const port = 8000;
 
 app.get('/', (req, res) => {

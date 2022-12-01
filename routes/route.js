@@ -5,7 +5,7 @@ const BalanceController = require('../controllers/balance');
 const router = express.Router();
 
 router.post('/getUserTransactions', TransactionController.findTransactions);
-// router.post('/getUserBalance', BalanceController.getbalance);
+router.post('/getUserBalance', BalanceController.getbalance);
 
 
-module.exports=router;
+module.exports = router;

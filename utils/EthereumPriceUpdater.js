@@ -1,33 +1,40 @@
-import axios from 'axios';
-import * as cron from 'cron'
-const etherModel=require('../models/etherSchema');
-exports.getEtherPrice=async ()=>{
-    const response=await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&amp&vs_currencies=inr");
-    const price=response.data.ethereum.inr;
+const  axios= require('axios');
+var CronJob = require('cron').CronJob;
+const etherModel = require('../models/etherSchema');
+EthereumUpdaterCron = async () => {
+    let price;
+    const resp = await axios.get(
+        'https://rest.coinapi.io/v1/exchangerate/ETH/INR/?apikey=86C4EFB0-3DA8-414E-A80D-E126A3135F3B',
+        {
+            headers: {
+                'Accept-Encoding': 'application/json',
+            }
+        }
+    );
+    price = resp.data.rate;
+    // console.log(price);
+    const ether = await etherModel.findOne({ name: 'Ethereum' });
+        if (!ether) {
+            const newEther = new etherModel({
+                name: 'Ethereum',
+                price: price
+            });
+            await newEther.save();
+        }
+        else {
+            ether.price = price;
+            await ether.save();
+        }
     return price;
-}
-EthereumUpdaterCron=async ()=> {
-    const price=await getEtherPrice();
-    console.log(price);
-    const ether=await etherModel.findOne({});
-    if(ether){
-        await etherModel.updateOne({
-            value:price
-        });
-    }
-    else{
-        await etherModel.create({
-            value:price
-        });
-    }
+
 }
 
-var job = new cron.CronJob(
-	'* * * * * *',
-	() => EthereumUpdaterCron(),
-	null,
-	true,
-	'Asia/Kolkata'
+var job = new CronJob(
+    '*/10 * * * *',
+    () => EthereumUpdaterCron(),
+    null,
+    true,
+    'Asia/Kolkata'
 );
+module.exports = { job, EthereumUpdaterCron };
 
-job.start();

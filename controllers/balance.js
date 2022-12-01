@@ -1,20 +1,22 @@
-// const balanceModel=require('../models/balanceSchema')
-// const axios = require('axios');
-// exports.findbalance = async (req, res) => {
-// //     try {
-// //         const {address} = req.body;
-// //         console.log(address);
-// //         const response= await axios.get("https://api.etherscan.io/api?module=account&action=txlist&address="+address+"&startblock=0&endblock=99999999&page=1&offset=10&sort=asc&apikey=UXHYBNDBZFGQHS4KS2MG5R15UTS3Z9PGWK");
-// //         const transactions=response.data.result;
-// //         transactions.forEach(async (transaction) => {    
-// //         const transactionfound=await balanceModel.findOne({address,blockNumber:transaction.blockNumber});
-// //             if(!transactionfound){
-// //                 await transactionsModel.create({address,...transaction});
-// //             }
-// //         });
-// //         res.send(response.data.result);
-        
-// //     } catch (err) {
-// //         console.log(err);
-// //     }
-// // }
+const { getTransactionsList } = require('../utils/transactionList');
+const { EthereumUpdaterCron } = require('../utils/EthereumPriceUpdater');
+exports.getbalance = async (req, res) => {
+    try {
+        const { address } = req.body;
+        console.log(address);
+        const transactions = await getTransactionsList(address);
+        let balance = 0;
+        transactions.forEach((transaction) => {
+            if (transaction.to == address)
+                balance = balance + Number(transaction.value);
+            else
+                balance = balance - Number(transaction.value);
+        });
+        const price = await EthereumUpdaterCron();
+        res.status(200).send({ balance, price });
+    } catch (err) {
+
+        console.log(err);
+        res.status(200).send("Unexpected Error");
+    }
+}
